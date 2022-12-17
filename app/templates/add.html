@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Добавление статьи</h1>
+        <form action="" method=post name="add_article" novalidate>
+            {{ form.hidden_tag() }}
+            <p>
+                {{ form.title.label }}<br>
+                {{ form.title() }}
+                {% for error in form.title.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.text.label }}<br>
+                {{ form.text() }}
+                {% for error in form.text.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.section.label }}<br>
+                {{ form.section() }}
+                {% for error in form.section.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <p>
+            <p>
+                {{ form.tag.label }}<br>
+                {{ form.tag() }}
+                {% for error in form.tag.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+                {{ form.new_tags.label }}
+                {{ form.new_tags() }}
+                {% for error in form.new_tags.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <br>
+            <p>
+                {{ form.region.label }}<br>
+                {{ form.region() }}
+                {% for error in form.region.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.age.label }}<br>
+                {{ form.age() }}
+                {% for error in form.age.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.ethnos.label }}<br>
+                {{ form.ethnos() }}
+                {% for error in form.ethnos.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+                {{ form.new_ethnos.label }}
+                {{ form.new_ethnos() }}
+                {% for error in form.new_ethnos.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>
+            
+            <p>{{ form.submit() }} </p>
+        </form>
+    <br>
+{% endblock %}

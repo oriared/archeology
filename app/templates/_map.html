@@ -1,0 +1,3 @@
+{% for r in regions %}
+    <div><a href="{{ url_for('region', name_region=r) }}">{{ r }}</a></div>
+{% endfor %}

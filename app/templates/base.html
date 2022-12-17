@@ -1,0 +1,16 @@
+<html>
+    <head>
+      <title>{{ title }}</title>
+    </head>
+    <body>
+        <h1>Археология без воды</h1>
+        <hr>
+        <a href="{{ url_for('index') }}">Главная</a>
+        <a href="{{ url_for('about') }}">О проекте</a>
+        <a href="{{ url_for('subscribe') }}">Подписаться</a>
+        <a href="{{ url_for('feedback') }}">Обратная связь</a>
+        <a href="{{ url_for('add') }}">Добавить статью</a>
+
+        {% block content %}{% endblock %}
+    </body>
+</html>

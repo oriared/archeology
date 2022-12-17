@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2><a href="{{ url_for('region', name_region=region) }}">{{ region }}</a> {% if age %}| <a href="{{ url_for('region', name_region=region, age=age) }}">{{ age }}</a> {% endif %} {% if ethnos %}| <a href="{{ url_for('region', name_region=region, ethnos=ethnos) }}">{{ ethnos }}</a> {% endif %}</h2> 
+    {% if not age %}
+    {% for true_age in true_ages %}
+        <div><a href="{{ url_for('region', name_region=region, age=true_age, ethnos=ethnos) }}">{{ true_age }}</a></div>
+    {% endfor %}
+    <hr>
+    {% endif %}
+    {% if not ethnos %}
+    {% for ethnos in true_ethnoses %}
+        <div><a href="{{ url_for('region', name_region=region, age=age, ethnos=ethnos) }}">{{ ethnos }}</a></div>
+    {% endfor %}
+    {% endif %}
+    {% if age and ethnos and section==None %}
+        {% for section in sections %}
+        <div><a href="{{ url_for('region', name_region=region, age=age, ethnos=ethnos, section=section) }}">{{ section }}</a></div>
+        {% endfor %}
+    {% endif %}
+    {% if section %}
+        <h2>{{ section }}</h2>
+    {% endif %}
+    {% if articles %}
+        {% for article in articles %}
+        <div><a href="{{ url_for('article', article_title=article) }}">{{ article }}</a></div>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}
+
+
+
