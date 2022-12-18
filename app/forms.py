@@ -5,10 +5,10 @@ from app.models import Article
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators = [DataRequired()])
-    password = PasswordField('Password', validators = [DataRequired()])
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Sign In')
+    username = StringField('Имя пользователя', validators = [DataRequired()])
+    password = PasswordField('Пароль', validators = [DataRequired()])
+    remember_me = BooleanField('Запомнить')
+    submit = SubmitField('Войти')
 
 
 class AddArticleForm(FlaskForm):
@@ -44,5 +44,5 @@ class AddArticleForm(FlaskForm):
 
 
     def validate_new_ethnos(self, new_ethnos):
-        if self.ethnos.data != -1:
+        if self.ethnos.data != -1 and new_ethnos == '':
             raise ValidationError('Этнос уже выбран из существующих')

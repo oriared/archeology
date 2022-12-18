@@ -1,13 +1,29 @@
 {% extends 'base.html' %}
-{% import 'bootstrap/wtf.html' as wtf %}
 
-{% block app_content %}
-    <h1>Sign In</h1>
-    <div class="row">
-        <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
-        </div>
-    </div>
+{% block content %}
+    <h2>Авторизация для авторов</h2>
+    <form action="" method=post name="login" novalidate>
+            {{ form.hidden_tag() }}
+            <p>
+                {{ form.username.label }}<br>
+                {{ form.username() }}
+                {% for error in form.username.errors %}
+                    [{{ error }}]
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.password.label }}<br>
+                {{ form.password() }}
+                {% for error in form.password.errors %}
+                    [{{ error }}]
+                {% endfor %}
+            </p>
+            <p>
+                {{ form.remember_me.label }}
+                {{ form.remember_me() }}
+            </p>
+            <p>{{ form.submit() }} </p>
+        </form>
     <br>
-    <p>New User? <a href="{{ url_for('register') }}">Click here to Register!</a></p>
+    <p><a href="{{ url_for('feedback') }}">Для регистрации в качестве автора свяжитесь с нами</a></p>
 {% endblock %}

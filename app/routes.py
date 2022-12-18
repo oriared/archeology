@@ -1,7 +1,9 @@
 from flask import render_template, url_for, request, redirect
+from flask_login import current_user, login_user, logout_user, login_required
+from werkzeug.urls import url_parse
 from app import app, db
-from app.models import Age, Ethnos, Region, Section, Tag, Article, TagArticle, Asera
-from app.forms import AddArticleForm
+from app.models import Age, Ethnos, Region, Section, Tag, Article, TagArticle, Asera, Author
+from app.forms import AddArticleForm, LoginForm
 
 
 @app.route('/')
@@ -28,10 +30,45 @@ def subscribe():
 
 @app.route('/article/<article_title>')
 def article(article_title):
-    return render_template('article.html', title=article_title, article_title=article_title)
+    text = Article.query.filter(Article.title==article_title).first().text
+    return render_template('article.html', title=article_title, article_title=article_title, text=text)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        author = Author.query.filter(Author.name_author==form.username.data).first()
+        if author is None or not author.check_password(form.password.data):
+            flash('Неверные имя пользователя или пароль')
+            return redirect(url_for('login'))
+        login_user(author, remember=form.remember_me.data)
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('index')
+        return redirect(next_page)
+
+    return render_template('login.html', title='Авторизация', form=form)
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+
+@app.route('/profile/<username>')
+def profile(username):
+    articles = [item.title for item in db.session.query(Article)
+                .join(Author, Article.author_id==Author.id)
+                .filter(Author.name_author==username)]
+    return render_template('profile.html', username=username, articles=articles)
 
 
 @app.route('/add', methods=['GET', 'POST'])
+@login_required
 def add():
     form = AddArticleForm()
     form.section.choices = [(item.id, item.name_section) for item in db.session.query(Section)]

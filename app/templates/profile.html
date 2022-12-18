@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h2>{{ username }}</h2>
+    {% for article in articles %}
+    <div>
+        <a href="{{ url_for('article', article_title=article) }}">{{ article }}</a>    
+    </div>
+    {% endfor %}
+{% endblock %}
