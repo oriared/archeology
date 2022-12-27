@@ -7,6 +7,7 @@
         <hr>
         <a href="{{ url_for('index') }}">Главная</a>
         <a href="{{ url_for('about') }}">О проекте</a>
+        <a href="{{ url_for('explore') }}">Поиск</a>
         <a href="{{ url_for('subscribe') }}">Подписаться</a>
         <a href="{{ url_for('feedback') }}">Обратная связь</a>
         {% if current_user.is_anonymous %}
@@ -16,7 +17,16 @@
             <a href="{{ url_for('logout') }}">Выход</a>
             <a href="{{ url_for('profile', username=current_user.name_author) }}">{{ current_user.name_author }}</a>
         {% endif %}
+        <hr>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
 
         {% block content %}{% endblock %}
     </body>
-</html>

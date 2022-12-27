@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if tags %}
+        {% for tag in tags %}
+        {{ tag }} <a href="{{ url_for('explore', tags=tags, deltag=tag) }}">удалить     </a>
+        {% endfor %}
+    {% endif %}
+    <form action="" method=post name="select_tag" novalidate>
+            {{ form.hidden_tag() }}
+            <p>
+                {{ form.tag.label }}<br>
+                {{ form.tag() }}
+                {% for error in form.tag.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </p>            
+            <p>{{ form.submit() }} </p>
+        </form>
+    {% if articles %}
+        {% for article in articles %}
+            <div><a href="{{ url_for('article', article_title=article.title) }}">{{ article.title }}</a></div>
+        {% endfor %}
+        {% if prev_url %}
+            <a href="{{ prev_url }}"><<<</a>
+        {% else %}
+            <<<
+        {% endif %}
+        {% for p in iter_pages %}
+            {% if p != page %}
+                <a href="{{ url_for('explore', tags=tags, page=p) }}">|{{ p }}|</a>
+            {% else %}
+                <strong>{{ p }}</strong>
+            {% endif %}
+        {% endfor %}
+        {% if next_url %}
+            <a href="{{ next_url }}">>>></a>
+        {% else %}
+            >>>
+        {% endif %}
+    {% endif %}
+
+{% endblock %}
+
+
+

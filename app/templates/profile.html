@@ -1,9 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
     <h2>{{ username }}</h2>
-    {% for article in articles %}
-    <div>
-        <a href="{{ url_for('article', article_title=article) }}">{{ article }}</a>    
-    </div>
-    {% endfor %}
+    {% if articles %}
+        {% for article in articles %}
+            <div><a href="{{ url_for('article', article_title=article.title) }}">{{ article.title }}</a></div>
+        {% endfor %}
+        {% if prev_url %}
+            <a href="{{ prev_url }}"><<<</a>
+        {% else %}
+            <<<
+        {% endif %}
+        {% for p in iter_pages %}
+            {% if p != page %}
+                <a href="{{ url_for('profile', username=username, page=p) }}">{{ p }}</a>
+            {% else %}
+                <strong>{{ p }}</strong>
+            {% endif %}
+        {% endfor %}
+        {% if next_url %}
+            <a href="{{ next_url }}">>>></a>
+        {% else %}
+            >>>
+        {% endif %}
+    {% endif %}
 {% endblock %}

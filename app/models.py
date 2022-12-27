@@ -5,8 +5,9 @@ from app import db, login
 
 
 @login.user_loader
-def load_user(id):
-    return Author.query.get(int(id))
+def load_user(user_id):
+    return Author.query.get(int(user_id))
+
 
 class Author(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -50,6 +51,8 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name_tag = db.Column(db.String(50), nullable=False)
 
+    #articles =...
+
 
 class Subscriber(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,6 +70,8 @@ class Article(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('author.id'))
     created_on = db.Column(db.Date, default=datetime.utcnow)
     updated_on = db.Column(db.Date)
+
+    #tags =...
 
 
 class Asera(db.Model):
@@ -94,9 +99,3 @@ class SubscriberAuthor(db.Model):
     __table_args__ = (db.PrimaryKeyConstraint('subscriber_id', 'author_id'),)
     subscriber_id = db.Column(db.Integer, db.ForeignKey('subscriber.id'))
     author_id = db.Column(db.Integer, db.ForeignKey('author.id'))
-
-
-
-
-
-

@@ -4,7 +4,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-class BaseConfig():
+class BaseConfig:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-shall-not-pass'
     
 
@@ -12,6 +12,7 @@ class DevelopmentConfig(BaseConfig):
     FLASK_DEBUG = True
     SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:100@127.0.0.1:5432/bezvody-dev'
     CSRF_ENABLED = True
+    PER_PAGE = 3
 
 
 class TestingConfig(BaseConfig):
@@ -19,4 +20,4 @@ class TestingConfig(BaseConfig):
 
 
 class ProductionConfig(BaseConfig):
-    FLASK_DEBUG = False    
+    FLASK_DEBUG = False
