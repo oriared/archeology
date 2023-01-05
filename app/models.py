@@ -16,6 +16,8 @@ class Author(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
 
     articles = db.relationship('Article', backref='author', lazy='dynamic')
+    subscribers = db.relationship('Subscriber', secondary='subscriber_author',
+        backref='authors')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -51,16 +53,16 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name_tag = db.Column(db.String(50), nullable=False)
 
-    #articles =...
+    articles = db.relationship('Article', secondary='tag_article', 
+        backref='tags')
+    subscribers = db.relationship('Subscriber', secondary='subscriber_tag', 
+        backref='tags')
 
 
 class Subscriber(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name_subscriber = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(100))
-
-    tags = db.relationship('Tag', secondary='subscriber_tag')
-    authors = db.relationship('Author', secondary='subscriber_author')
 
 
 class Article(db.Model):
@@ -69,13 +71,13 @@ class Article(db.Model):
     text = db.Column(db.Text)
     author_id = db.Column(db.Integer, db.ForeignKey('author.id'))
     created_on = db.Column(db.Date, default=datetime.utcnow)
-    updated_on = db.Column(db.Date)
-
-    #tags =...
+    updated_on = db.Column(db.Date, default=datetime.utcnow, 
+        onupdate=datetime.utcnow)
 
 
 class Asera(db.Model):
-    __table_args__ = (db.PrimaryKeyConstraint('article_id', 'section_id', 'region_id', 'age_id', 'ethnos_id'),)
+    __table_args__ = (db.PrimaryKeyConstraint('article_id', 'section_id', 
+        'region_id', 'age_id', 'ethnos_id'),)
     article_id = db.Column(db.Integer, db.ForeignKey('article.id'))
     section_id = db.Column(db.Integer, db.ForeignKey('section.id'))
     region_id = db.Column(db.Integer, db.ForeignKey('region.id'))

@@ -2,7 +2,7 @@
 {% block content %}
     {% if tags %}
         {% for tag in tags %}
-        {{ tag }} <a href="{{ url_for('explore', tags=tags, deltag=tag) }}">удалить     </a>
+        {{ tag }} <a href="{{ url_for('explore', tags=tags, deletetag=tag) }}">удалить</a>
         {% endfor %}
     {% endif %}
     <form action="" method=post name="select_tag" novalidate>
@@ -29,7 +29,7 @@
             {% if p != page %}
                 <a href="{{ url_for('explore', tags=tags, page=p) }}">|{{ p }}|</a>
             {% else %}
-                <strong>{{ p }}</strong>
+                {{ p }}
             {% endif %}
         {% endfor %}
         {% if next_url %}
@@ -37,6 +37,8 @@
         {% else %}
             >>>
         {% endif %}
+    {% else %}
+        <strong> :( Нет статей с заданной совокупностью тегов</strong>
     {% endif %}
 
 {% endblock %}

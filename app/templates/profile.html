@@ -12,9 +12,9 @@
         {% endif %}
         {% for p in iter_pages %}
             {% if p != page %}
-                <a href="{{ url_for('profile', username=username, page=p) }}">{{ p }}</a>
+                <a href="{{ url_for('profile', username=username, page=p) }}">|{{ p }}|</a>
             {% else %}
-                <strong>{{ p }}</strong>
+                {{ p }}
             {% endif %}
         {% endfor %}
         {% if next_url %}

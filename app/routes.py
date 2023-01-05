@@ -10,7 +10,7 @@ from app.forms import AddArticleForm, LoginForm, SelectTagForm
 @app.route('/')
 @app.route('/index')
 def index():
-    regions = [item.name_region for item in db.session.query(Region).all()]
+    regions = [item.name_region for item in Region.query.all()]
     return render_template('index.html', title='Археология без воды', 
         regions=regions)
 
@@ -32,15 +32,12 @@ def subscribe():
 
 @app.route('/article/<article_title>')
 def article(article_title):
-    article = Article.query.filter(Article.title == article_title).first()
+    article = Article.query.filter_by(title=article_title).first()
     text = article.text
     created_on = article.created_on
     author = Author.query.filter_by(id=article.author_id).first_or_404() \
         .name_author
-    tags = [item.name_tag for item in Tag.query
-            .join(TagArticle, Tag.id == TagArticle.tag_id)
-            .join(Article, TagArticle.article_id == Article.id)
-            .filter(Article.title == article_title).all()]
+    tags = [item.name_tag for item in article.tags]
     
     return render_template('article.html', 
                            title=article_title, 
@@ -54,20 +51,22 @@ def article(article_title):
 @app.route('/explore', methods=['GET', 'POST'])
 def explore():
     form = SelectTagForm()
-    form.tag.choices = [item.name_tag for item in db.session.query(Tag) \
-        .order_by(Tag.name_tag)]
+    form.tag.choices = [item.name_tag for item in Tag.query.order_by( \
+        Tag.name_tag)]
     tags = request.args.getlist('tags')
     page = request.args.get('page', 1, type=int)
     if form.validate_on_submit():
             tags.extend(form.tag.data)
             return redirect(url_for('explore', tags=list(set(tags))))
-    if tags:    
-        if request.args.get('deltag'):
-            tags.remove(request.args.get('deltag'))
-        articles = Article.query \
+    if request.args.get('deletetag'):
+            tags.remove(request.args.get('deletetag'))
+    if tags:
+        articles = db.session.query(Article.title, Article.created_on) \
                    .join(TagArticle, Article.id == TagArticle.article_id) \
                    .join(Tag, TagArticle.tag_id == Tag.id) \
                    .filter(Tag.name_tag.in_(tags)) \
+                   .group_by(Article.title, Article.created_on) \
+                   .having(db.func.count(Tag.id) == len(tags)) \
                    .order_by(Article.created_on.desc()) \
                    .paginate(page=page, per_page=app.config['PER_PAGE'],
                     error_out=False)
@@ -93,8 +92,8 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        author = Author.query.filter(Author.name_author == 
-            form.username.data).first()
+        username = form.username.data
+        author = Author.query.filter_by(name_author=username).first()
         if author is None or not author.check_password(form.password.data):
             flash('Неверные имя пользователя или пароль')
             return redirect(url_for('login'))
@@ -116,9 +115,8 @@ def logout():
 @app.route('/profile/<username>')
 def profile(username):
     page = request.args.get('page', 1, type=int)
-    articles = Author.query.filter(Author.name_author == username).first(). \
-        articles.paginate(page=page, per_page=app.config['PER_PAGE'], 
-            error_out=False)
+    articles = Author.query.filter_by(name_author=username).first().articles.\
+        paginate(page=page, per_page=app.config['PER_PAGE'], error_out=False) 
     next_url = url_for('profile', username=username, page=articles.next_num) \
         if articles.has_next else None
     prev_url = url_for('profile', username=username, page=articles.prev_num) \
@@ -136,30 +134,28 @@ def profile(username):
 def add():
     form = AddArticleForm()
     form.section.choices = [(item.id, item.name_section) for item in \
-        db.session.query(Section)]
+        Section.query]
     form.region.choices = [(item.id, item.name_region) for item in \
-        db.session.query(Region)]
+        Region.query]
     form.age.choices = [(item.id, f"{item.name_age} ({item.period})") for \
-        item in db.session.query(Age)]
-    form.ethnos.choices = [(-1, '---другое---')] \
-        + [(item.id, item.name_ethnos) for item in db.session.query(Ethnos) \
-        .order_by(Ethnos.name_ethnos)]
+        item in Age.query]
+    form.ethnos.choices = [(-1, '--другое--')] + [(item.id, item.name_ethnos)\
+        for item in Ethnos.query.order_by(Ethnos.name_ethnos)]
     form.tag.choices = [(-1, '---')] + [(item.id, item.name_tag) for item in \
-        db.session.query(Tag).order_by(Tag.name_tag)]
+        Tag.query.order_by(Tag.name_tag)]
     
     if form.validate_on_submit():
         article = Article(title=form.title.data, text=form.text.data, 
             author_id=current_user.id)
         db.session.add(article)
-        article_id = db.session.query(Article).filter(Article.title == 
-            form.title.data).first().id
+        article_id = Article.query.filter_by(title=form.title.data).first().id
 
         ethnos_id = form.ethnos.data
         if ethnos_id == -1:
             new_ethnos = Ethnos(name_ethnos=form.new_ethnos.data)
             db.session.add(new_ethnos)
-            ethnos_id = Ethnos.query.filter(Ethnos.name_ethnos == 
-                form.new_ethnos.data).first().id
+            ethnos_id = Ethnos.query.filter_by(name_ethnos=form.new_ethnos \
+                .data).first().id
 
         for i in form.region.data:
             for j in form.age.data:
@@ -173,17 +169,17 @@ def add():
             for item in form.new_tags.data.split(', '):
                 new_tag = Tag(name_tag=item)
                 db.session.add(new_tag)
-                tag_id.append(Tag.query.filter(Tag.name_tag == 
-                    item).first().id)
+                tag_id.append(Tag.query.filter_by(name_tag=item).first().id)
 
         for i in tag_id:
             ta = TagArticle(tag_id=i, article_id=article_id)
             db.session.add(ta)
 
         db.session.commit()
-        return redirect(
-            url_for('region', name_region=Region.query.filter_by(id=form.
-                region.data[0]).first().name_region))
+
+        flash('Статья добавлена')
+        return redirect(url_for('region', name_region=Region.query.filter_by \
+            (id=form.region.data[0]).first().name_region))
 
     return render_template('add.html', title='Добавить статью', form=form)
 
