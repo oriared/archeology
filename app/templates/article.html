@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
     <h2>{{ article_title }}</h2>
-    <p>{{ text }}</p>
+    <p>{{ text | safe }}</p>
     <br>
     <p>Автор: <a href="{{ url_for('profile', username=author) }}">{{ author }}</a></p>
     <p>Дата публикации: {{ created_on }}</p>

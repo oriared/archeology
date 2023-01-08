@@ -129,59 +129,68 @@ def profile(username):
         prev_url=prev_url, iter_pages=iter_pages)
 
 
-@app.route('/add', methods=['GET', 'POST'])
+@app.route('/add/<step>', methods=['GET', 'POST'])
 @login_required
-def add():
-    form = AddArticleForm()
-    form.section.choices = [(item.id, item.name_section) for item in \
-        Section.query]
-    form.region.choices = [(item.id, item.name_region) for item in \
-        Region.query]
-    form.age.choices = [(item.id, f"{item.name_age} ({item.period})") for \
-        item in Age.query]
-    form.ethnos.choices = [(-1, '--другое--')] + [(item.id, item.name_ethnos)\
-        for item in Ethnos.query.order_by(Ethnos.name_ethnos)]
-    form.tag.choices = [(-1, '---')] + [(item.id, item.name_tag) for item in \
-        Tag.query.order_by(Tag.name_tag)]
+def add(step):
+    if step == 'f':
+        form = AddArticleForm()
+        form.section.choices = [(item.id, item.name_section) for item in \
+            Section.query]
+        form.region.choices = [(item.id, item.name_region) for item in \
+            Region.query]
+        form.age.choices = [(item.id, f"{item.name_age} ({item.period})") for \
+            item in Age.query]
+        form.ethnos.choices = [(-1, '--другое--')] + [(item.id, item.name_ethnos)\
+            for item in Ethnos.query.order_by(Ethnos.name_ethnos)]
+        form.tag.choices = [(-1, '---')] + [(item.id, item.name_tag) for item in \
+            Tag.query.order_by(Tag.name_tag)]
+        
+        if form.validate_on_submit():
+            article = Article(title=form.title.data, 
+                author_id=current_user.id)
+            db.session.add(article)
+            article_id = Article.query.filter_by(title=form.title.data).first().id
+
+            ethnos_id = form.ethnos.data
+            if ethnos_id == -1:
+                new_ethnos = Ethnos(name_ethnos=form.new_ethnos.data)
+                db.session.add(new_ethnos)
+                ethnos_id = Ethnos.query.filter_by(name_ethnos=form.new_ethnos \
+                    .data).first().id
+
+            for i in form.region.data:
+                for j in form.age.data:
+                    asera = Asera(article_id=article_id, 
+                        section_id=form.section.data, ethnos_id=ethnos_id,
+                        region_id=i, age_id=j)
+                    db.session.add(asera)
+
+            tag_id = form.tag.data
+            if form.new_tags.data:
+                for item in form.new_tags.data.split(', '):
+                    new_tag = Tag(name_tag=item)
+                    db.session.add(new_tag)
+                    tag_id.append(Tag.query.filter_by(name_tag=item).first().id)
+
+            for i in tag_id:
+                ta = TagArticle(tag_id=i, article_id=article_id)
+                db.session.add(ta)
+                db.session.commit()
+            return redirect(url_for('add', step='editor'))
+        
+        return render_template('add.html', title='Добавление статью', form=form)
     
-    if form.validate_on_submit():
-        article = Article(title=form.title.data, text=form.text.data, 
-            author_id=current_user.id)
-        db.session.add(article)
-        article_id = Article.query.filter_by(title=form.title.data).first().id
-
-        ethnos_id = form.ethnos.data
-        if ethnos_id == -1:
-            new_ethnos = Ethnos(name_ethnos=form.new_ethnos.data)
-            db.session.add(new_ethnos)
-            ethnos_id = Ethnos.query.filter_by(name_ethnos=form.new_ethnos \
-                .data).first().id
-
-        for i in form.region.data:
-            for j in form.age.data:
-                asera = Asera(article_id=article_id, 
-                    section_id=form.section.data, ethnos_id=ethnos_id,
-                    region_id=i, age_id=j)
-                db.session.add(asera)
-
-        tag_id = form.tag.data
-        if form.new_tags.data:
-            for item in form.new_tags.data.split(', '):
-                new_tag = Tag(name_tag=item)
-                db.session.add(new_tag)
-                tag_id.append(Tag.query.filter_by(name_tag=item).first().id)
-
-        for i in tag_id:
-            ta = TagArticle(tag_id=i, article_id=article_id)
-            db.session.add(ta)
-
-        db.session.commit()
-
-        flash('Статья добавлена')
-        return redirect(url_for('region', name_region=Region.query.filter_by \
-            (id=form.region.data[0]).first().name_region))
-
-    return render_template('add.html', title='Добавить статью', form=form)
+    elif step == 'editor':
+        print(current_user.id)
+        print(Article.query.first().title)
+        if request.method == 'POST':
+            db.session.query(Article).filter_by(author_id=current_user.id) \
+                .order_by(Article.updated_on.desc()).first().text = request \
+                .form.get('editordata')
+            db.session.commit()
+            flash('Статья успешно добавлена')
+            return redirect(url_for('index'))
+        return render_template('add.html', title='Редактор')
 
 
 @app.route('/region/<name_region>')

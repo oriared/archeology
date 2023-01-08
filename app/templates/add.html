@@ -1,20 +1,21 @@
 {% extends 'base.html' %}
 
+
+{% block head %}
+    <!-- include summernote css/js -->
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote.min.js"></script>
+{% endblock %}
+
 {% block content %}
     <h1>Добавление статьи</h1>
+        {% if form %}
         <form action="" method=post name="add_article" novalidate>
             {{ form.hidden_tag() }}
             <p>
                 {{ form.title.label }}<br>
                 {{ form.title() }}
                 {% for error in form.title.errors %}
-                    <span style="color: red;">[{{ error }}]</span>
-                {% endfor %}
-            </p>
-            <p>
-                {{ form.text.label }}<br>
-                {{ form.text() }}
-                {% for error in form.text.errors %}
                     <span style="color: red;">[{{ error }}]</span>
                 {% endfor %}
             </p>
@@ -68,5 +69,16 @@
             
             <p>{{ form.submit() }} </p>
         </form>
+        {% else %}
+        <form method="post">
+            <textarea id="summernote" name="editordata"></textarea>
+            <input type="submit" value="Add content">
+        </form>
+        <script>
+            $(document).ready(function() {
+            $('#summernote').summernote();
+            });
+        </script>
+        {% endif %}
     <br>
 {% endblock %}
