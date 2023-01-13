@@ -11,8 +11,8 @@ from app.forms import AddArticleForm, LoginForm, SelectTagForm
 @app.route('/index')
 def index():
     regions = [item.name_region for item in Region.query.all()]
-    return render_template('index.html', title='Археология без воды', 
-        regions=regions)
+    return render_template('index.html', title='Археология без воды',
+                           regions=regions)
 
 
 @app.route('/about')
@@ -38,28 +38,28 @@ def article(article_title):
     author = Author.query.filter_by(id=article.author_id).first_or_404() \
         .name_author
     tags = [item.name_tag for item in article.tags]
-    
-    return render_template('article.html', 
-                           title=article_title, 
-                           article_title=article_title, 
-                           text=text, 
-                           created_on=created_on, 
-                           author=author, 
+
+    return render_template('article.html',
+                           title=article_title,
+                           article_title=article_title,
+                           text=text,
+                           created_on=created_on,
+                           author=author,
                            tags=tags)
 
 
 @app.route('/explore', methods=['GET', 'POST'])
 def explore():
     form = SelectTagForm()
-    form.tag.choices = [item.name_tag for item in Tag.query.order_by( \
+    form.tag.choices = [item.name_tag for item in Tag.query.order_by(
         Tag.name_tag)]
     tags = request.args.getlist('tags')
     page = request.args.get('page', 1, type=int)
     if form.validate_on_submit():
-            tags.extend(form.tag.data)
-            return redirect(url_for('explore', tags=list(set(tags))))
+        tags.extend(form.tag.data)
+        return redirect(url_for('explore', tags=list(set(tags))))
     if request.args.get('deletetag'):
-            tags.remove(request.args.get('deletetag'))
+        tags.remove(request.args.get('deletetag'))
     if tags:
         articles = db.session.query(Article.title, Article.created_on) \
                    .join(TagArticle, Article.id == TagArticle.article_id) \
@@ -69,21 +69,22 @@ def explore():
                    .having(db.func.count(Tag.id) == len(tags)) \
                    .order_by(Article.created_on.desc()) \
                    .paginate(page=page, per_page=app.config['PER_PAGE'],
-                    error_out=False)
+                             error_out=False)
     else:
         articles = Article.query.order_by(Article.created_on.desc()) \
-            .paginate(page=page, per_page=app.config['PER_PAGE'], 
-                error_out=False)
+            .paginate(page=page, per_page=app.config['PER_PAGE'],
+                      error_out=False)
     next_url = url_for('explore', tags=tags, page=articles.next_num) \
         if articles.has_next else None
     prev_url = url_for('explore', tags=tags, page=articles.prev_num) \
         if articles.has_prev else None
-    iter_pages = articles.iter_pages(left_edge=2, left_current=2, 
-        right_current=5, right_edge=2)
+    iter_pages = articles.iter_pages(left_edge=2, left_current=2,
+                                     right_current=5, right_edge=2)
 
     return render_template('explore.html', title='Поиск', tags=tags,
-        articles=articles.items, form=form, page=page, next_url=next_url, 
-        prev_url=prev_url, iter_pages=iter_pages)
+                           articles=articles.items, form=form, page=page,
+                           next_url=next_url, prev_url=prev_url,
+                           iter_pages=iter_pages)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -116,53 +117,58 @@ def logout():
 def profile(username):
     page = request.args.get('page', 1, type=int)
     articles = Author.query.filter_by(name_author=username).first().articles.\
-        paginate(page=page, per_page=app.config['PER_PAGE'], error_out=False) 
+        paginate(page=page, per_page=app.config['PER_PAGE'], error_out=False)
     next_url = url_for('profile', username=username, page=articles.next_num) \
         if articles.has_next else None
     prev_url = url_for('profile', username=username, page=articles.prev_num) \
         if articles.has_prev else None
-    iter_pages = articles.iter_pages(left_edge=2, left_current=2, 
-        right_current=5, right_edge=2)
+    iter_pages = articles.iter_pages(left_edge=2, left_current=2,
+                                     right_current=5, right_edge=2)
 
-    return render_template('profile.html', username=username, 
-        articles=articles.items, page=page, next_url=next_url, 
-        prev_url=prev_url, iter_pages=iter_pages)
+    return render_template('profile.html', username=username,
+                           articles=articles.items, page=page,
+                           next_url=next_url, prev_url=prev_url,
+                           iter_pages=iter_pages)
 
 
-@app.route('/add/<step>', methods=['GET', 'POST'])
+@app.route('/add', methods=['GET', 'POST'])
 @login_required
-def add(step):
-    if step == 'f':
+def add():
+    if request.args.get('step') == '1':
         form = AddArticleForm()
-        form.section.choices = [(item.id, item.name_section) for item in \
-            Section.query]
-        form.region.choices = [(item.id, item.name_region) for item in \
-            Region.query]
-        form.age.choices = [(item.id, f"{item.name_age} ({item.period})") for \
-            item in Age.query]
-        form.ethnos.choices = [(-1, '--другое--')] + [(item.id, item.name_ethnos)\
-            for item in Ethnos.query.order_by(Ethnos.name_ethnos)]
-        form.tag.choices = [(-1, '---')] + [(item.id, item.name_tag) for item in \
-            Tag.query.order_by(Tag.name_tag)]
-        
+        form.section.choices = [(item.id, item.name_section) for item in
+                                Section.query]
+        form.region.choices = [(item.id, item.name_region) for item in
+                               Region.query]
+        form.age.choices = [(item.id, f"{item.name_age} ({item.period})") for
+                            item in Age.query]
+        form.ethnos.choices = [(-1, '--другое--')] + \
+            [(item.id, item.name_ethnos) for item in Ethnos.query.order_by(
+                Ethnos.name_ethnos)]
+        form.tag.choices = [(-1, '---')] + \
+            [(item.id, item.name_tag) for item in Tag.query.order_by(
+                Tag.name_tag)]
+
         if form.validate_on_submit():
-            article = Article(title=form.title.data, 
-                author_id=current_user.id)
+            article = Article(title=form.title.data,
+                              author_id=current_user.id)
             db.session.add(article)
-            article_id = Article.query.filter_by(title=form.title.data).first().id
+            article_id = Article.query.filter_by(title=form.title.data) \
+                .first().id
 
             ethnos_id = form.ethnos.data
             if ethnos_id == -1:
                 new_ethnos = Ethnos(name_ethnos=form.new_ethnos.data)
                 db.session.add(new_ethnos)
-                ethnos_id = Ethnos.query.filter_by(name_ethnos=form.new_ethnos \
-                    .data).first().id
+                ethnos_id = Ethnos.query.filter_by(name_ethnos=form.new_ethnos
+                                                   .data).first().id
 
             for i in form.region.data:
                 for j in form.age.data:
-                    asera = Asera(article_id=article_id, 
-                        section_id=form.section.data, ethnos_id=ethnos_id,
-                        region_id=i, age_id=j)
+                    asera = Asera(article_id=article_id, ethnos_id=ethnos_id,
+                                  section_id=form.section.data, region_id=i,
+                                  age_id=j)
+
                     db.session.add(asera)
 
             tag_id = form.tag.data
@@ -170,19 +176,18 @@ def add(step):
                 for item in form.new_tags.data.split(', '):
                     new_tag = Tag(name_tag=item)
                     db.session.add(new_tag)
-                    tag_id.append(Tag.query.filter_by(name_tag=item).first().id)
+                    tag_id.append(Tag.query.filter_by(name_tag=item).first()
+                                  .id)
 
             for i in tag_id:
                 ta = TagArticle(tag_id=i, article_id=article_id)
                 db.session.add(ta)
                 db.session.commit()
-            return redirect(url_for('add', step='editor'))
-        
-        return render_template('add.html', title='Добавление статью', form=form)
-    
-    elif step == 'editor':
-        print(current_user.id)
-        print(Article.query.first().title)
+            return redirect(url_for('add', step='2'))
+
+        return render_template('add.html', title='Новая статья', form=form)
+
+    elif request.args.get('step') == '2':
         if request.method == 'POST':
             db.session.query(Article).filter_by(author_id=current_user.id) \
                 .order_by(Article.updated_on.desc()).first().text = request \
@@ -191,6 +196,8 @@ def add(step):
             flash('Статья успешно добавлена')
             return redirect(url_for('index'))
         return render_template('add.html', title='Редактор')
+    else:
+        return render_template('404.html')
 
 
 @app.route('/region/<name_region>')
@@ -207,8 +214,8 @@ def region(name_region):
                          .join(Asera, Ethnos.id == Asera.ethnos_id)
                          .join(Region, Asera.region_id == Region.id)
                          .join(Age, Asera.age_id == Age.id)
-                         .filter(Region.name_region == name_region, 
-                             Age.name_age == name_age)
+                         .filter(Region.name_region == name_region,
+                                 Age.name_age == name_age)
                          .all()]
     else:
         true_ethnoses = [item.name_ethnos for item in
@@ -224,8 +231,8 @@ def region(name_region):
                      .join(Asera, Age.id == Asera.age_id)
                      .join(Region, Asera.region_id == Region.id)
                      .join(Ethnos, Asera.ethnos_id == Ethnos.id)
-                     .filter(Region.name_region == name_region, 
-                         Ethnos.name_ethnos == name_ethnos)
+                     .filter(Region.name_region == name_region,
+                             Ethnos.name_ethnos == name_ethnos)
                      .all()]
     else:
         true_ages = [item.name_age for item in
@@ -241,9 +248,9 @@ def region(name_region):
                           .join(Age, Asera.age_id == Age.id)
                           .join(Ethnos, Asera.ethnos_id == Ethnos.id)
                           .join(Region, Asera.region_id == Region.id)
-                          .filter(Region.name_region == name_region, 
-                              Ethnos.name_ethnos == name_ethnos,
-                              Age.name_age == name_age)
+                          .filter(Region.name_region == name_region,
+                                  Ethnos.name_ethnos == name_ethnos,
+                                  Age.name_age == name_age)
                           .all()]
         if name_section:
             for item in query_sections:
@@ -253,7 +260,8 @@ def region(name_region):
         else:
             sections = [item.name_section for item in query_sections]
 
-    return render_template('region.html', title=name_region, 
-        region=name_region, age=name_age, ethnos=name_ethnos,
-        section=name_section, sections=sections, true_ages=true_ages,
-        true_ethnoses=true_ethnoses, articles=articles)
+    return render_template('region.html', title=name_region,
+                           region=name_region, age=name_age,
+                           ethnos=name_ethnos, section=name_section,
+                           sections=sections, true_ages=true_ages,
+                           true_ethnoses=true_ethnoses, articles=articles)

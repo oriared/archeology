@@ -1,3 +1,7 @@
-{% for r in regions %}
-    <div><a href="{{ url_for('region', name_region=r) }}">{{ r }}</a></div>
-{% endfor %}
+<table class="table table-hover">
+    <td>
+    {% for r in regions %}
+        <tr><a href="{{ url_for('region', name_region=r) }}">{{ r }}</a></tr><br>
+    {% endfor %}
+    </td>
+</table>

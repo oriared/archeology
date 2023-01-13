@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block content %}
+{% block app_content %}
     <h2><a href="{{ url_for('region', name_region=region) }}">{{ region }}</a> {% if age %}| <a href="{{ url_for('region', name_region=region, age=age) }}">{{ age }}</a> {% endif %} {% if ethnos %}| <a href="{{ url_for('region', name_region=region, ethnos=ethnos) }}">{{ ethnos }}</a> {% endif %}</h2> 
     {% if not age %}
     {% for true_age in true_ages %}
