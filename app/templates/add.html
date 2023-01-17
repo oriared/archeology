@@ -2,26 +2,12 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+<div class="container">
     <h2>Добавление статьи</h2>
-        {% if form %}
-        <div class="row">
-        <div class="col-md-4">
+    <div class="row">
+        <div class="col-md-5">
             {{ wtf.quick_form(form) }}
         </div>
-        </div>
-        {% else %}
-        <form method="post">
-            <textarea id="summernote" name="editordata"></textarea>
-            <input type="submit" value="Add content">
-        </form>
-        
-        <script>
-            $('#summernote').summernote({
-              tabsize: 2,
-              height: 300
-            });
-        </script>
-        
-        {% endif %}
-    <br>
+    </div>
+</div>
 {% endblock %}

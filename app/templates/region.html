@@ -1,31 +1,72 @@
 {% extends 'base.html' %}
 {% block app_content %}
-    <h2><a href="{{ url_for('region', name_region=region) }}">{{ region }}</a> {% if age %}| <a href="{{ url_for('region', name_region=region, age=age) }}">{{ age }}</a> {% endif %} {% if ethnos %}| <a href="{{ url_for('region', name_region=region, ethnos=ethnos) }}">{{ ethnos }}</a> {% endif %}</h2> 
-    {% if not age %}
-    {% for true_age in true_ages %}
-        <div><a href="{{ url_for('region', name_region=region, age=true_age, ethnos=ethnos) }}">{{ true_age }}</a></div>
-    {% endfor %}
-    <hr>
-    {% endif %}
-    {% if not ethnos %}
-    {% for ethnos in true_ethnoses %}
-        <div><a href="{{ url_for('region', name_region=region, age=age, ethnos=ethnos) }}">{{ ethnos }}</a></div>
-    {% endfor %}
-    {% endif %}
-    {% if age and ethnos and section==None %}
-        {% for section in sections %}
-        <div><a href="{{ url_for('region', name_region=region, age=age, ethnos=ethnos, section=section) }}">{{ section }}</a></div>
-        {% endfor %}
-    {% endif %}
-    {% if section %}
-        <h2>{{ section }}</h2>
-    {% endif %}
-    {% if articles %}
-        {% for article in articles %}
-        <div><a href="{{ url_for('article', article_title=article) }}">{{ article }}</a></div>
-        {% endfor %}
-    {% endif %}
+<div class="container">
+    <br>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb" style="font-size: 20px;">
+        <li class="breadcrumb-item"><a href="{{ url_for('region', name_region=region) }}">{{ region }}</a></li>
+        {% if age %}
+        <li class="breadcrumb-item"><a href="{{ url_for('region', name_region=region, age=age) }}">{{ age }}</a></li>
+        {% endif %}
+        {% if ethnos %}
+        <li class="breadcrumb-item"><a href="{{ url_for('region', name_region=region, ethnos=ethnos) }}">{{ ethnos }}</a></li>
+        {% endif %}
+        {% if section %}
+        <li class="breadcrumb-item active" aria-current="page">{{ section }}</li>
+        {% endif %}
+      </ol>
+    </nav>
 
+
+    <div class="container list-group list-group-flush">
+        <div class="row justify-content-between">
+        {% if not age %}
+        <div class="col-md-auto">
+        <div class="list-group-item text-center h5">Эпоха</div>
+        {% for true_age in true_ages %}
+            <a href="{{ url_for('region', name_region=region, age=true_age, ethnos=ethnos) }}" class="list-group-item list-group-item-action">{{ true_age }}</a>
+        {% endfor %}
+        </div>
+        {% endif %}
+        {% if not ethnos %}
+        <div class="col-md-auto text-right right ">
+        <div class="list-group-item text-center h5">Этнос</div>
+        {% for ethnos in true_ethnoses %}
+            <a href="{{ url_for('region', name_region=region, age=age, ethnos=ethnos) }}" class="list-group-item list-group-item-action">{{ ethnos }}</a>
+        {% endfor %}
+        </div>
+        {% endif %}
+        </div>
+        {% if age and ethnos and not section %}
+            <div class="col-md-auto">
+            {% for section in sections %}
+                 <a href="{{ url_for('region', name_region=region, age=age, ethnos=ethnos, section=section) }}" class="list-group-item list-group-item-action">{{ section }}</a>
+            {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    {% if articles %}
+        {% include '_articles.html' %}
+        <br>
+        <nav aria-label="Page navigation">
+          <ul class="pagination">
+            <li class="page-item {% if not prev_url %}disabled{% endif %}">
+              <a class="page-link" href="{{ prev_url }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            {% for p in iter_pages %}
+                <li class="page-item {% if p == page %}active" aria-current="page{% elif not p %}disabled{% endif %}"><a class="page-link" href="{{ url_for('region', name_region=region, age=age, ethnos=ethnos, section=section, page=p) }}">{% if p %} {{ p }} {% else %} ... {% endif %}</a></li>
+            {% endfor %}
+            <li class="page-item {% if not next_url %}disabled{% endif %}">
+              <a class="page-link" href="{{ next_url }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+    {% endif %}
+</div>
 {% endblock %}
 
 

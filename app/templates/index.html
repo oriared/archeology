@@ -1,5 +1,14 @@
 {% extends 'base.html' %}
+{% block styles %}
+{{ super() }}
+<script src="{{url_for('static', filename='script.js')}}"></script>
+{% endblock %}
 {% block app_content %}
-    <h3>карта</h3>
-    {% include '_map.html' %}    
+    <div class="container" style="width: 19%; position: absolute;">
+    <div class="col display-4 text-center"><img src="{{ url_for('static', filename='logo.jpeg')}}" width="70" height="70" class="d-inline-block align-top" alt="">Артефакт</div><div class="col text-center">Докопаться до истории</div>
+    </div>
+    <object type="image/svg+xml" data="{{ url_for('static', filename='map.svg') }}" id="map" style="width: 100%;">
+      There should be a map of Russian states
+    </object>
+    <br>   
 {% endblock %}

@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import ValidationError, StringField, PasswordField, \
-    BooleanField, SubmitField, SelectField, SelectMultipleField
+    BooleanField, SubmitField, SelectField, SelectMultipleField, TextAreaField
 from wtforms.validators import DataRequired, Length
 from app.models import Article
 
@@ -17,9 +17,12 @@ class AddArticleForm(FlaskForm):
         DataRequired(message='Поле не может быть пустым'),
         Length(min=3, max=70,
                message='Заголовок должен быть длиной от 3 до 70 символов')])
+    summary = TextAreaField('Краткое описание, тизер (до 500 символов)', 
+                            validators=[Length(max=500, message= \
+                            'Слишком длинное описание')])
     region = SelectMultipleField('Регионы (современные):', coerce=int,
         validators=[DataRequired(message='Необходимо выбрать минимум \
-        один регион')])
+                                 один регион')])
     age = SelectMultipleField('Период:', coerce=int, validators=[
         DataRequired(message='Необходимо выбрать минимум один период')])
     ethnos = SelectField('Этнос:', coerce=int)

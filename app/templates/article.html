@@ -1,11 +1,41 @@
 {% extends 'base.html' %}
 {% block app_content %}
-    <h2>{{ article_title }}</h2>
-    <p>{{ text | safe }}</p>
-    <br>
+<div class="container">
+    <h2 class="p-3 mb-2">{{ article.title }}</h2>
+    {% if not mode %}
+        <div class="p-3 mb-2 bg-light">
+        <hr>
+        {% if article.text %}
+            <p>{{ article.text | safe }}</p>
+        {% else %}
+            <h3>/// в данный момент материал недоступен ///</h3>
+        {% endif %}
+        </div>
+    {% else %}
+        <form method="post">
+            <textarea id="summernote" name="editordata">{% if article.text %} {{ article.text }} {% endif %}</textarea>
+            <input type="submit" value="Сохранить">
+        </form>
+        <script>
+          $('#summernote').summernote({
+            tabsize: 2,
+            height: 100
+          });
+        </script>
+    {% endif %}
+
     <p>Автор: <a href="{{ url_for('profile', username=author) }}">{{ author }}</a></p>
-    <p>Дата публикации: {{ created_on }}</p>
-    {% for tag in tags %}
-        <a href="{{ url_for('explore', tags=tag) }}">{{ tag }}   </a>
-    {% endfor %}   
+    <p>Дата публикации: {{ moment(article.created_on).format("Do MMMM YYYY") }}</p>
+    <div>Теги: 
+    {% for tag in article.tags %}
+        <a class="btn btn-outline-primary" href="{{ url_for('explore', tags=tag.name_tag) }}" role="button">{{ tag.name_tag }} </a>
+    {% endfor %}
+    </div>
+    <br>
+    <br>
+    <br>
+    {% if current_user.name_author == author and not mode %}
+    <p><a class="btn btn-outline-secondary" href="{{ url_for('editor', article_title=article.title) }}" role="button">Редактировать</a></p>
+    {% endif %}
+</div>
 {% endblock %}

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
+from flask_moment import Moment
 import toml
 import os
 
@@ -23,6 +24,7 @@ login.login_view = 'login'
 login.login_message = 'Авторизуйтесь, чтобы получить возможность добавлять \
     статьи'
 bootstrap = Bootstrap(app)
+moment = Moment(app)
 
 
 from . import routes, models, errors
