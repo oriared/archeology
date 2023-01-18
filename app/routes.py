@@ -20,10 +20,8 @@ def article(article_title):
     # Функция представления, возвращающая страницу просмотра статьи
     article = Article.query.filter_by(title=article_title).first()
     author = Author.query.filter_by(id=article.author_id).first_or_404()
-    tags = [item.name_tag for item in article.tags]
 
     return render_template('article.html',
-                           title=article_title,
                            article=article,
                            author=author.name_author)
 
@@ -44,7 +42,7 @@ def explore():
     page = request.args.get('page', 1, type=int)
     # Для возможности удаления уже выбранных тегов из поискового запроса возле
     # каждого тега находится кнопка "удалить", отправляющая запрос с аргументом
-    # "deletetag"
+    # "deletetag". Проверяем, есть ли такой аргумент и удаляем тег
     if request.args.get('deletetag'):
         tags.remove(request.args.get('deletetag'))
     # При нажатии кнопки "Поиск" выбранные теги добавляются к выбранным ранее
@@ -55,20 +53,20 @@ def explore():
     if tags:
         # Отбираем из базы статьи, в которых присутствуют все выбранные теги
         articles = db.session.query(Article.title, Article.summary) \
-                   .join(TagArticle, Article.id == TagArticle.article_id) \
-                   .join(Tag, TagArticle.tag_id == Tag.id) \
-                   .filter(Tag.name_tag.in_(tags)) \
-                   .group_by(Article.title, Article.summary, Article.created_on) \
-                   .having(db.func.count(Tag.id) == len(tags)) \
-                   .order_by(Article.created_on.desc()) \
-                   .paginate(page=page, per_page=app.config['PER_PAGE'],
-                             error_out=False)
+            .join(TagArticle, Article.id == TagArticle.article_id) \
+            .join(Tag, TagArticle.tag_id == Tag.id) \
+            .filter(Tag.name_tag.in_(tags)) \
+            .group_by(Article.title, Article.summary, Article.created_on) \
+            .having(db.func.count(Tag.id) == len(tags)) \
+            .order_by(Article.created_on.desc()) \
+            .paginate(page=page, per_page=app.config['PER_PAGE'],
+                      error_out=False)
     else:
         # Если ни одного тега не задано, отображаем все имеющиеся статьи
         articles = Article.query.order_by(Article.created_on.desc()) \
             .paginate(page=page, per_page=app.config['PER_PAGE'],
                       error_out=False)
-    # Реализуем пагинацию
+    # Переменные для пагинации
     next_url = url_for('explore', tags=tags, page=articles.next_num) \
         if articles.has_next else None
     prev_url = url_for('explore', tags=tags, page=articles.prev_num) \
@@ -243,7 +241,6 @@ def region(name_region):
     # отвечающих заданным условиям
     if name_age and name_ethnos and name_section:
         page = request.args.get('page', 1, type=int)
-
         articles = Article.query.join(Asera, Article.id == Asera.article_id) \
             .join(Age, Asera.age_id == Age.id) \
             .join(Ethnos, Asera.ethnos_id == Ethnos.id) \
@@ -256,7 +253,6 @@ def region(name_region):
             .order_by(Article.created_on.desc()) \
             .paginate(page=page, per_page=app.config['PER_PAGE'],
                       error_out=False)
-
         next_url = url_for('region', name_region=name_region, age=name_age,
                            ethnos=name_ethnos, section=name_section,
                            page=articles.next_num) \

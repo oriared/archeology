@@ -9,10 +9,8 @@ import os
 
 
 def config_path():
-    if os.path.exists(os.path.abspath('config.toml')):
-        return os.path.abspath('config.toml')
-    else:
-        return os.path.abspath('example_config.toml')
+    return os.path.abspath('config.toml') if os.path.exists(os.path \
+        .abspath('config.toml')) else os.path.abspath('example_config.toml')
 
 
 app = Flask(__name__)
