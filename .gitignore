@@ -4,3 +4,4 @@
 /venv
 /.idea
 /config.toml
+/pyproject.toml

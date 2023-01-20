@@ -9,8 +9,11 @@ import os
 
 
 def config_path():
-    return os.path.abspath('config.toml') if os.path.exists(os.path \
-        .abspath('config.toml')) else os.path.abspath('example_config.toml')
+    return (
+        os.path.abspath("config.toml")
+        if os.path.exists(os.path.abspath("config.toml"))
+        else os.path.abspath("example_config.toml")
+    )
 
 
 app = Flask(__name__)
@@ -18,9 +21,9 @@ app.config.from_file(config_path(), load=toml.load)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login = LoginManager(app)
-login.login_view = 'login'
-login.login_message = 'Авторизуйтесь, чтобы получить возможность добавлять \
-    статьи'
+login.login_view = "login"
+login.login_message = "Авторизуйтесь, чтобы получить возможность добавлять \
+    статьи"
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 
