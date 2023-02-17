@@ -20,14 +20,12 @@ import re
 @app.route("/")
 @app.route("/index")
 def index():
-    # Функция представления, возвращающая главную страницу
     return render_template("index.html", title="Артефакт")
 
 
 @app.route("/article/<path:article_title>", methods=["GET", "POST"])
 def article(article_title):
-    # Функция представления, возвращающая страницу просмотра статьи
-    article = Article.query.filter_by(title=article_title).first()
+    article = Article.query.filter_by(title=article_title).first_or_404()
     author = Author.query.filter_by(id=article.author_id).first_or_404()
 
     return render_template(
@@ -42,13 +40,10 @@ def explore():
     # теги передаются как аргументы запроса. В результате на странице будут
     # представлены статьи, имеющие все выбранные теги.
     form = SelectTagForm()
-    # Добавляем в форму все имеющиеся теги в алфавитном порядке
     form.tag.choices = [
         item.name_tag for item in Tag.query.order_by(Tag.name_tag)
     ]
-    # Получаем список тегов из аргументов запроса
     tags = request.args.getlist("tags")
-    # Получаем номер страницы из аргументов запроса для пагинации
     page = request.args.get("page", 1, type=int)
     # Для возможности удаления уже выбранных тегов из поискового запроса возле
     # каждого тега находится кнопка "удалить", отправляющая запрос с аргументом
@@ -61,7 +56,6 @@ def explore():
         return redirect(url_for("explore", tags=list(set(tags))))
     tags.sort()
     if tags:
-        # Отбираем из базы статьи, в которых присутствуют все выбранные теги
         articles = (
             db.session.query(Article.title, Article.summary)
             .join(TagArticle, Article.id == TagArticle.article_id)
@@ -79,7 +73,6 @@ def explore():
         articles = Article.query.order_by(Article.created_on.desc()).paginate(
             page=page, per_page=app.config["PER_PAGE"], error_out=False
         )
-    # Переменные для пагинации
     next_url = (
         url_for("explore", tags=tags, page=articles.next_num)
         if articles.has_next
@@ -109,7 +102,6 @@ def explore():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # Стандартная форма авторизации, используются flask-login и werkzeug
     if current_user.is_authenticated:
         return redirect(url_for("index"))
     form = LoginForm()
@@ -130,14 +122,12 @@ def login():
 
 @app.route("/logout")
 def logout():
-    # Функция для выхода из профиля
     logout_user()
     return redirect(url_for("index"))
 
 
 @app.route("/profile/<username>")
 def profile(username):
-    # Функция представления возвращает страницу автора со всеми его статьями
     page = request.args.get("page", 1, type=int)
     articles = (
         Author.query.filter_by(name_author=username)
@@ -202,7 +192,6 @@ def add():
     ]
 
     if form.validate_on_submit():
-        # Обрабатываем полученные данные из формы
         article = Article(
             title=form.title.data,
             summary=form.summary.data,
@@ -235,8 +224,6 @@ def add():
                 )
 
                 db.session.add(asera)
-        # Получаем список тегов к статье и добавляем к нему (и в БД) созданные
-        # автором новые теги
         tag_id = form.tag.data
         if form.new_tags.data:
             for item in form.new_tags.data.split(", "):
@@ -248,7 +235,6 @@ def add():
             ta = TagArticle(tag_id=i, article_id=article_id)
             db.session.add(ta)
         db.session.commit()
-        # Перенаправляем пользователя в редактор текста
         return redirect(url_for("editor", article_title=form.title.data))
 
     return render_template("add.html", title="Новая статья", form=form)
@@ -453,11 +439,9 @@ def region(name_region):
 
 @app.route("/about")
 def about():
-    # Страница "О проекте"
     return render_template("about.html", title="О проекте")
 
 
 @app.route("/feedback")
 def feedback():
-    # Страница "Обратная связь"
     return render_template("feedback.html", title="Обратная связь")

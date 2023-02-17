@@ -5,3 +5,4 @@
 /.idea
 /config.toml
 /pyproject.toml
+.flake8
