@@ -74,9 +74,9 @@ class Article(db.Model):
     text = db.Column(db.Text)
     summary = db.Column(db.String(500))
     author_id = db.Column(db.Integer, db.ForeignKey("author.id"))
-    created_on = db.Column(db.DateTime, default=datetime.utcnow)
+    created_on = db.Column(db.DateTime, server_default=db.func.now())
     updated_on = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        db.DateTime, default=datetime.utcnow, onupdate=db.func.now()
     )
 
 
